@@ -1,40 +1,47 @@
 <template>
-    <tr>
-      <td>
-        <input type="checkbox" :checked="bugItem.resolve" @change="onChange(bugItem.id)"/>
-      </td>
-      <td class="select">
-        <span v-if="!isEdit" @click="isEdit =true">{{ bugItem.desc }}</span>
-        <input v-else type="text" v-model="editData" @keydown.enter="saveEdit" />
-      </td>
-      <td>
-        <button @click="delBUG(bugItem.id)">删除</button>
-      </td>
-    </tr>
+  <tr>
+    <td>
+      <input type="checkbox" :checked="bugItem.resolve" @change="onChange(bugItem.id)" />
+    </td>
+    <td class="select">
+      <span v-if="!isEdit" @click="onEdit">{{ bugItem.desc }}</span>
+      <input ref="txt" v-else type="text" v-model="editData" @keydown.enter="saveEdit(bugItem.id)" />
+    </td>
+    <td>
+      <button @click="delBUG(bugItem.id)">删除</button>
+    </td>
+  </tr>
 </template>
 
 <script>
 export default {
   name: "BugItem",
-  props:['bugItem','modifyResolveCallback','deleteByIdCallback'],
+  props: ["bugItem"],
   data() {
-    return{
-      isEdit:false,
-      editData:''
-    }
+    return {
+      isEdit: false,
+      editData: "",
+    };
   },
   methods: {
+    onEdit() {
+      this.isEdit = true;
+      this.editData = this.bugItem.desc;
+      this.$nextTick(() => {
+        this.$refs.txt.focus();
+      });
+    },
     delBUG(id) {
-      this.deleteByIdCallback(id)
+      this.$bus.$emit("deleteByIdCallback", id);
     },
     onChange(id) {
-      this.modifyResolveCallback(id)
+      this.$bus.$emit("modifyResolveCallback", id);
     },
     // 编辑bug描述内容
-    saveEdit() {
-      console.log('输入的内容',this.editData);
-    }
-
+    saveEdit(bugId) {
+      this.isEdit = false;
+      this.$bus.$emit("change", bugId, this.editData);
+    },
   },
 };
 </script>
